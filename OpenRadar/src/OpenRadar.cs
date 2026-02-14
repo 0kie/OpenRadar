@@ -5,79 +5,61 @@ using System.IO;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using OpenRadar.Windows;
+using ECommons.Configuration;
 
 namespace OpenRadar;
 
-public sealed class Plugin : IDalamudPlugin
+public sealed class OpenRadar : IDalamudPlugin
 {
-    [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
-    [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
-    [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
-    [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-    [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
-    [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
-    [PluginService] internal static IPluginLog Log { get; private set; } = null!;
+    public static string Name => "OpenRadar";
 
-    private const string CommandName = "/pmycommand";
+    internal static OpenRadar P = null!;
+    private Configuration config = null!;
+    public static Configuration C => P.config;
 
-    public Configuration Configuration { get; init; }
 
-    public readonly WindowSystem WindowSystem = new("OpenRadar");
-    private ConfigWindow ConfigWindow { get; init; }
-    private MainWindow MainWindow { get; init; }
+    internal WindowSystem windowSystem = null!;
+    internal MainWindow mainWindow = null!;
 
-    public Plugin()
+
+    public OpenRadar(IDalamudPluginInterface pi)
     {
-        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-
-        ConfigWindow = new ConfigWindow(this);
-        MainWindow = new MainWindow(this);
-
-        WindowSystem.AddWindow(ConfigWindow);
-        WindowSystem.AddWindow(MainWindow);
-
-        CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
+        P = this;
+        ECommonsMain.Init(pi, P, Module.DalamudReflector, Module.ObjectFunctions);
+        new ECommons.Schedulers.TickScheduler(Load);
+    }
+    public void Load()
+    {
+        EzConfig.Migrate<Configuration>();
+        config = EzConfig.Init<Configuration>();
+        windowSystem = new();
+        mainWindow = new();
+        Svc.PluginInterface.UiBuilder.Draw += windowSystem.Draw;
+        Svc.PluginInterface.UiBuilder.OpenMainUi += () =>
         {
-            HelpMessage = "A useful message to display in /xlhelp"
-        });
-
-        // Tell the UI system that we want our windows to be drawn through the window system
-        PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
-
-        // This adds a button to the plugin installer entry of this plugin which allows
-        // toggling the display status of the configuration ui
-        PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
-
-        // Adds another button doing the same but for the main ui of the plugin
-        PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
-
-        // Add a simple message to the log with level set to information
-        // Use /xllog to open the log window in-game
-        // Example Output: 00:57:54.959 | INF | [SamplePlugin] ===A cool log message from Sample Plugin===
-        Log.Information($"===A cool log message from {PluginInterface.Manifest.Name}===");
+            mainWindow.IsOpen = true;
+        };
+        Svc.PluginInterface.UiBuilder.OpenConfigUi += () =>
+        {
+            mainWindow.IsOpen = true;
+        };
+        EzCmd.Add("/openradar", OnCommand);
     }
 
     public void Dispose()
     {
-        // Unregister all actions to not leak anything during disposal of plugin
-        PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
-        PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
-        PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
-        
-        WindowSystem.RemoveAllWindows();
-
-        ConfigWindow.Dispose();
-        MainWindow.Dispose();
-
-        CommandManager.RemoveHandler(CommandName);
+        GenericHelpers.Safe(() => Svc.PluginInterface.UiBuilder.Draw -= windowSystem.Draw);
+        ECommonsMain.Dispose();
     }
 
     private void OnCommand(string command, string args)
     {
-        // In response to the slash command, toggle the display status of our main ui
-        MainWindow.Toggle();
+        var subcommands = args.Split(' ');
+
+        if (subcommands.Length == 0 || args == "")
+        {
+            mainWindow.IsOpen = !mainWindow.IsOpen;
+            return;
+        }
     }
-    
-    public void ToggleConfigUi() => ConfigWindow.Toggle();
-    public void ToggleMainUi() => MainWindow.Toggle();
 }

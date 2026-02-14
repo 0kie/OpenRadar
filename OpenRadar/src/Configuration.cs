@@ -1,19 +1,15 @@
 ﻿using Dalamud.Configuration;
+using ECommons.Configuration;
 using System;
 
 namespace OpenRadar;
 
-[Serializable]
-public class Configuration : IPluginConfiguration
+public partial class Configuration
 {
     public int Version { get; set; } = 0;
 
-    public bool IsConfigWindowMovable { get; set; } = true;
-    public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
-
-    // The below exists just to make saving less cumbersome
     public void Save()
     {
-        Plugin.PluginInterface.SavePluginConfig(this);
+        EzConfig.Save();
     }
 }
