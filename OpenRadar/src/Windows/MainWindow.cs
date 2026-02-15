@@ -1,6 +1,11 @@
-﻿using Dalamud.Interface.Textures.TextureWraps;
+﻿using System.Net.Mail;
+using System.Net.WebSockets;
+using Dalamud.Interface.Textures.TextureWraps;
+using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.Sheets;
+using Microsoft.Win32.SafeHandles;
 
 namespace OpenRadar.Windows;
 
@@ -11,8 +16,8 @@ public class MainWindow : Window
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoFocusOnAppearing;
         SizeConstraints = new()
         {
-            MinimumSize = new Vector2(250, 300),
-            MaximumSize = new Vector2(250, 300)
+            MinimumSize = new Vector2(300, 300),
+            MaximumSize = new Vector2(300, 300)
         };
         P.windowSystem.AddWindow(this);
     }
@@ -28,13 +33,13 @@ public class MainWindow : Window
         var windowPos = new Vector2(LookingForGroupDetailPos.X + AddonHandler.addonWidth, LookingForGroupDetailPos.Y);
         ImGui.SetWindowPos(windowPos);
 
-        var extractedPlayers = Network.RecentExtractedPlayers;
+        var extractedPlayers = Data.ExtractedPlayers;
 
         if (extractedPlayers.Count > 0)
         {
             var listing = Network.PFListings
                 .FirstOrDefault(l => 
-                l.hostContentId == extractedPlayers.First()!.content_id);
+                l.hostContentId == Data.ExtractedContentIds.First());
                 
             if (listing != null)
             {
@@ -55,31 +60,34 @@ public class MainWindow : Window
                         ImGui.TableNextColumn();
                         if (job.RowId != 0)
                         {
+                            var player = extractedPlayers[i];
                             var jobIcon = Util.GetJobIcon(job.RowId);
                             if (jobIcon != null)
                                 ImGui.Image(jobIcon.Handle, new Vector2(20,20));
                             else
                                 ImGui.Image(Util.GetJobIcon(45)!.Handle, new Vector2(20,20));
                             ImGui.TableNextColumn();
-                            var player = extractedPlayers[i];
                             if (player != null && !player.name.IsNullOrEmpty())
-                            {
+                            {   
+                                /*
                                 if (i == 0)
                                     ImGui.TextColored(new Vector4(0f, 0.3f, 1f, 1f), player.name);
                                 else
-                                    ImGui.Text(player.name);
+                                    ImGui.Text(player.name);*/
+                                ImGui.Text(player.name);
                             }
                             else
                             {
                                 ImGui.TextColored(new Vector4(1f, 0.2f, 0f, 1f), "Player Missing");
                             }
                             ImGui.TableNextColumn();
-                            if (player != null && !player.world.IsNullOrEmpty())
+                            if (player == null || player.world == 0)
+                                ImGui.Text("");
+                            else
                             {
-                                var world = Svc.Data.GetExcelSheet<World>().First(world => world.RowId == player.world!.ParseInt()).InternalName.ExtractText();
+                                var world = Svc.Data.GetExcelSheet<World>().First(world => world.RowId == player.world).InternalName.ExtractText();
                                 ImGui.Text(world);
                             }
-
                         }
                         else
                         {

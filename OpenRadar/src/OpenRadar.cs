@@ -1,6 +1,7 @@
 ﻿using OpenRadar.Windows;
 using ECommons.Configuration;
 using Dalamud.Game.Addon.Lifecycle;
+using ECommons.Automation.NeoTaskManager;
 
 namespace OpenRadar;
 
@@ -16,6 +17,8 @@ public sealed class OpenRadar : IDalamudPlugin
     internal WindowSystem windowSystem = null!;
     internal MainWindow mainWindow = null!;
     internal ConfigWindow configWindow = null!;
+
+    internal TaskManager taskManager = null!;
 
     public OpenRadar(IDalamudPluginInterface pi)
     {
@@ -33,6 +36,7 @@ public sealed class OpenRadar : IDalamudPlugin
         mainWindow = new();
         configWindow = new();
 
+        taskManager = new(new(abortOnTimeout: true, timeLimitMS: 25000, showDebug: false));
     
         Svc.PluginInterface.UiBuilder.Draw += windowSystem.Draw;
         Svc.GameNetwork.NetworkMessage += Network.PFExtract;

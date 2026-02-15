@@ -1,6 +1,12 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Dalamud.Game.Gui.PartyFinder.Types;
 using ECommons.DalamudServices.Legacy;
+using ECommons.GameHelpers;
+using FFXIVClientStructs.FFXIV.Client.UI.Info;
+using Lumina.Excel.Sheets;
+using Microsoft.VisualBasic;
+using OpenRadar.Tasks;
 
 namespace OpenRadar;
 
@@ -10,30 +16,36 @@ public static class Network
     public static List<PlayerInfo?> RecentExtractedPlayers = new();
     private static bool IsReceivingPage = false;
 
-    public unsafe static void PFExtract(
-        nint dataPtr,
-        ushort opCode,
-        uint sourceActorId,
-        uint targetActorId,
-        NetworkMessageDirection direction)
+    public unsafe static void PFExtract(nint dataPtr, ushort opCode, uint sourceActorId, uint targetActorId, NetworkMessageDirection direction)
     {        
-        if (opCode == 760 && direction == NetworkMessageDirection.ZoneDown)
+        if (direction == NetworkMessageDirection.ZoneDown)
         {
-            //PrintData<int>(dataPtr, 30, 30);
-            RecentExtractedPlayers.Clear();
-            for (int i = 12; i < 20; i++)
+
+            if (opCode == 760)
             {
-                // content_ids stored as ulongs in packet
-                ulong content_id = *((ulong*)dataPtr + i);
-                var playerInfo = PlayerTrackInterop.Extract(content_id);
-                RecentExtractedPlayers.Add(playerInfo);
+                // content_ids from pf post
+                Data.ResetExtractedData();
+                for (int i = 0; i < 8; i++)
+                {
+                    // content_ids stored as ulongs in packet
+                    ulong content_id = *((ulong*)dataPtr + i + 12);
+                    Data.ExtractedContentIds[i] = content_id;
+                    TaskPlayerTrackQuery.Enqueue(content_id);
+                }
             }
-        }
-        else if (opCode == 179)
-        {
-            // end packet after pf post packets delivered,
-            Svc.Log.Debug("PF Page Complete");
-            IsReceivingPage = false;
+            if (opCode == 179)
+            {
+                // end packet after pf post packets delivered
+                Svc.Log.Debug("PF Page Complete");
+                IsReceivingPage = false;
+            }
+            if (opCode == 689)
+            {
+                //Util.PrintData<ulong>(dataPtr, 10, 10);
+
+                var player = FetchPlatePacketInfo(dataPtr);
+                Data.UpdatePlayerList(player);
+            }
         }
     }
     public static void ListingExtract(IPartyFinderListing listing, IPartyFinderListingEventArgs args)
@@ -63,19 +75,13 @@ public static class Network
         PFListings.Add(extractedListing);
     }
 
-    private unsafe static void PrintData<T>(nint dataPtr, int totalRows, int infoPerRow) where T : unmanaged
+    private unsafe static PlayerInfo FetchPlatePacketInfo(nint ptr)
     {
-        T* ptr = (T*)dataPtr;
+        var contentId = *((ulong*)ptr+2);
+        var playerName = Util.ReadUtf8String((byte*)ptr + 421, 30);
+        ushort worldId = *((ushort*)ptr + 16);
 
-        for (int row = 0; row < totalRows; row++)
-        {
-            string packetInfoRow = "";
-            for (int col = 0; col < infoPerRow; col++)
-            {
-                T dataPoint = *(ptr + row * infoPerRow + col);
-                packetInfoRow += $"{dataPoint} ";
-            }
-            Svc.Log.Debug(packetInfoRow);
-        }
+        //var world = Svc.Data.GetExcelSheet<World>().First(world => world.RowId == worldId).InternalName.ExtractText();
+        return new PlayerInfo(contentId, playerName, worldId);
     }
 }
