@@ -11,3 +11,4 @@ global using System.Linq;
 global using System.Numerics;
 global using System;
 global using static OpenRadar.OpenRadar;
+global using static OpenRadar.Data;

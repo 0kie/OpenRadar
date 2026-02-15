@@ -6,6 +6,9 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using OpenRadar.Windows;
 using ECommons.Configuration;
+using ECommons.DalamudServices.Legacy;
+using ECommons.Opcodes;
+using Dalamud.Game.Addon.Lifecycle;
 
 namespace OpenRadar;
 
@@ -35,6 +38,11 @@ public sealed class OpenRadar : IDalamudPlugin
         windowSystem = new();
         mainWindow = new();
         Svc.PluginInterface.UiBuilder.Draw += windowSystem.Draw;
+        Svc.GameNetwork.NetworkMessage += Network.PFExtract;
+        Svc.PfGui.ReceiveListing += Network.ListingExtract;
+
+        Svc.AddonLifecycle.RegisterListener(AddonEvent.PostDraw, "LookingForGroupDetail", AddonHandler.LookingForGroupDetail);
+
         Svc.PluginInterface.UiBuilder.OpenMainUi += () =>
         {
             mainWindow.IsOpen = true;
@@ -49,6 +57,9 @@ public sealed class OpenRadar : IDalamudPlugin
     public void Dispose()
     {
         GenericHelpers.Safe(() => Svc.PluginInterface.UiBuilder.Draw -= windowSystem.Draw);
+        GenericHelpers.Safe(() => Svc.GameNetwork.NetworkMessage -= Network.PFExtract);
+        GenericHelpers.Safe(() => Svc.PfGui.ReceiveListing -= Network.ListingExtract);
+        GenericHelpers.Safe(() =>Svc.AddonLifecycle.UnregisterListener(AddonEvent.PostDraw, "LookingForGroupDetail", AddonHandler.LookingForGroupDetail));
         ECommonsMain.Dispose();
     }
 
