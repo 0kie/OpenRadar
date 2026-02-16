@@ -5,7 +5,6 @@ namespace OpenRadar;
 
 public static class AddonHandler
 {
-
     public static Vector2 addonPosition = new();
     public static float addonWidth = new();
     public static void LookingForGroupDetail(AddonEvent type, AddonArgs args)

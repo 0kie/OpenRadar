@@ -32,11 +32,14 @@ public static class Util
         }
     }
 
-    public unsafe static string ReadUtf8String(byte* b, int maxLength = 30)
+    public unsafe static string ReadUtf8String(byte* b, int maxLength = 30, bool endAtNull = true)
     {
         int len = 0;
-        while (len < maxLength && b[len] != 0)
-            len++;
+        if (endAtNull)
+            while (len < maxLength && b[len] != 0)
+                len++;
+        else
+            len = maxLength;
 
         return System.Text.Encoding.UTF8.GetString(b, len);
     }

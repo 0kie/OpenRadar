@@ -5,6 +5,7 @@ namespace OpenRadar;
 
 public static class Data
 {
+    public static List<ulong> FailedPlateContentIds = new List<ulong>();
     public static List<ulong> ExtractedContentIds = Enumerable.Repeat<ulong>(0, 8).ToList();
     public static List<PlayerInfo?> ExtractedPlayers = Enumerable.Repeat<PlayerInfo?>(null, 8).ToList();
 

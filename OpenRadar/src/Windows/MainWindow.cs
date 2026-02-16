@@ -80,7 +80,7 @@ public class MainWindow : Window
                             }
                             else
                             {
-                                ImGui.TextColored(new Vector4(1f, 0.2f, 0f, 1f), "Player Missing");
+                                ImGui.TextColored(new Vector4(1f, 0.7f, 0.2f, 1f), "Finding Player...");
                             }
                             ImGui.TableNextColumn();
                             if (player == null || player.world == 0)

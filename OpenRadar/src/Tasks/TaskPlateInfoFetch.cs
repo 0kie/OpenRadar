@@ -14,12 +14,13 @@ public static class TaskPlateInfoFetch
     {
         if (!EzThrottler.Throttle("PlateInfo", 800))
             return false; 
-
-        Svc.Log.Debug("3 - Fetching and Parsing Player Packet");
+        Svc.Log.Debug($"3 - Fetching and Parsing Player Packet {contentId}");
         // yes im opening the adventurer card and not showing it, idk how to simulate the zoneup packet without opening the addon
         var agentCharaCard = AgentCharaCard.Instance();
         agentCharaCard->OpenCharaCard(contentId);
         agentCharaCard->Hide();
+        Network.FailedContentId = contentId;
+        //AgentFriendlist.Instance()->RequestFriendInfo(contentId);
 
         return true;
     }

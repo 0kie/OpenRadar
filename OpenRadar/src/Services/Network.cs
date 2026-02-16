@@ -16,6 +16,7 @@ public static class Network
     public static List<ListingInformation> PFListings = new();
     public static List<PlayerInfo?> RecentExtractedPlayers = new();
     private static bool IsReceivingPage = false;
+    public static ulong FailedContentId = 0;
 
     public unsafe static void PFExtract(nint dataPtr, ushort opCode, uint sourceActorId, uint targetActorId, NetworkMessageDirection direction)
     {        
@@ -50,6 +51,22 @@ public static class Network
                     Database.AddPlayer(playerInfo);           
                     Data.UpdatePlayerList(playerInfo);
                 }
+            }
+            if (opCode == 589)
+            {
+                // PlateFail
+                TaskFriendInfoFetch.Enqueue(FailedContentId);
+            }
+            if (opCode == 282)
+            {   
+                // FriendPacket
+                ulong contentId = *((ulong*)dataPtr+1);
+                string name = Util.ReadUtf8String((byte*)dataPtr+22, 30);
+                ushort worldId = *((ushort*)dataPtr + 8);
+                PlayerInfo playerInfo = new PlayerInfo(contentId, name, worldId);
+
+                Database.AddPlayer(playerInfo);
+                Data.UpdatePlayerList(playerInfo);
             }
         }
     }
