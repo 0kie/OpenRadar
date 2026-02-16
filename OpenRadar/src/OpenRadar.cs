@@ -40,7 +40,6 @@ public sealed class OpenRadar : IDalamudPlugin
     
         Svc.PluginInterface.UiBuilder.Draw += windowSystem.Draw;
         Svc.GameNetwork.NetworkMessage += Network.PFExtract;
-        Svc.PfGui.ReceiveListing += Network.ListingExtract;
         Svc.Toasts.ErrorToast += ToastHandler.ErrorToast;
         Svc.Chat.ChatMessage += ChatHandler.PlateError;
 
@@ -61,7 +60,6 @@ public sealed class OpenRadar : IDalamudPlugin
     {
         GenericHelpers.Safe(() => Svc.PluginInterface.UiBuilder.Draw -= windowSystem.Draw);
         GenericHelpers.Safe(() => Svc.GameNetwork.NetworkMessage -= Network.PFExtract);
-        GenericHelpers.Safe(() => Svc.PfGui.ReceiveListing -= Network.ListingExtract);
         GenericHelpers.Safe(() => Svc.Toasts.ErrorToast -= ToastHandler.ErrorToast);
         GenericHelpers.Safe(() => Svc.Chat.ChatMessage -= ChatHandler.PlateError);
         GenericHelpers.Safe(() =>Svc.AddonLifecycle.UnregisterListener(AddonEvent.PostDraw, "LookingForGroupDetail", AddonHandler.LookingForGroupDetail));

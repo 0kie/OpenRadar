@@ -37,15 +37,12 @@ public class MainWindow : Window
 
         if (extractedPlayers.Count > 0)
         {
-            var listing = Network.PFListings
-                .FirstOrDefault(l => 
-                l.hostContentId == Data.ExtractedContentIds.First());
+            var listing = Data.CurrentPost;
                 
             if (listing != null)
             {
-                var dutyName = listing.duty.Name.ExtractText();
-                var modifiedDutyName = char.ToUpper(dutyName[0]) + dutyName.Substring(1);
-                ImGuiEx.TextCentered(new Vector4(0f, 1f, 0f, 1f), modifiedDutyName);
+                var dutyName = Util.DutyIdToName(listing.dutyId);
+                ImGuiEx.TextCentered(new Vector4(0f, 1f, 0f, 1f), dutyName);
                 ImGui.Separator();
                 ImGui.Dummy(new Vector2(20,10));
 
@@ -55,15 +52,15 @@ public class MainWindow : Window
                     ImGui.TableSetupColumn("Name");
                     ImGui.TableSetupColumn("World");
                     ImGui.TableHeadersRow();
-                    for (int i = 0; i < listing.slotCount; i++)
+                    for (int i = 0; i < listing.jobIds.Count; i++)
                     {
-                        var job = listing.jobsPresent[i];
+                        var job = listing.jobIds[i];
                         ImGui.TableNextRow();
                         ImGui.TableNextColumn();
-                        if (job.RowId != 0)
+                        if (job != 0)
                         {
                             var player = extractedPlayers[i];
-                            var jobIcon = Util.GetJobIcon(job.RowId);
+                            var jobIcon = Util.GetJobIcon(job);
                             if (jobIcon != null)
                                 ImGui.Image(jobIcon.Handle, new Vector2(20,20));
                             else
@@ -87,8 +84,7 @@ public class MainWindow : Window
                                 ImGui.Text("");
                             else
                             {
-                                var world = Svc.Data.GetExcelSheet<World>().First(world => world.RowId == player.world).InternalName.ExtractText();
-                                ImGui.Text(world);
+                                ImGui.Text(Util.WorldIdToName(player.world));
                             }
                         }
                         else

@@ -24,6 +24,7 @@ public class ConfigWindow : Window
         /*
         Show Locked PFs
         Info button to find where last found (info from PlayerTrack)
+        Enable Tomestone, take bits from BetterBlacklist
         
         */
     }

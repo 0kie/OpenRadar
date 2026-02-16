@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Dalamud.Game.Gui.PartyFinder.Types;
+using ECommons.ChatMethods;
 using ECommons.DalamudServices.Legacy;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
@@ -27,19 +28,19 @@ public static class Network
             {
                 // content_ids from pf post
                 Data.ResetExtractedData();
+                ushort dutyId = *((ushort*)dataPtr + 20);
+                CurrentPost = new PostInfo(dutyId, new List<byte>(), new List<ulong>());
+                Svc.Log.Information(Util.DutyIdToName(dutyId));
                 for (int i = 0; i < 8; i++)
                 {
-                    // content_ids stored as ulongs in packet
                     ulong content_id = *((ulong*)dataPtr + i + 12);
-                    Data.ExtractedContentIds[i] = content_id;
+                    byte jobId = *((byte*)dataPtr + i + 224);
+
+                    CurrentPost.contentIds.Add(content_id);
+                    CurrentPost.jobIds.Add(jobId);
+
                     TaskPlayerTrackQuery.Enqueue(content_id);
                 }
-            }
-            if (opCode == 179)
-            {
-                // end packet after pf post packets delivered
-                Svc.Log.Debug("PF Page Complete");
-                IsReceivingPage = false;
             }
             if (opCode == 689)
             {
@@ -68,34 +69,6 @@ public static class Network
                 Data.UpdatePlayerList(playerInfo);
             }
         }
-    }
-    public static void ListingExtract(IPartyFinderListing listing, IPartyFinderListingEventArgs args)
-    {
-        if (!IsReceivingPage)
-        {
-            PFListings.Clear();
-            IsReceivingPage = true;
-        }
-
-        if (!args.Visible)
-            return;
-
-        Svc.Log.Debug("PF Listing Extraction");
-
-        var extractedListing = new ListingInformation
-        {
-            hostContentId = listing.ContentId,
-            jobsPresent = listing.JobsPresent.Select(j => j.Value).ToList(),
-            duty = listing.Duty.Value,
-            description = listing.Description.TextValue?.ToString() ?? "None",
-            hostName = listing.Name.TextValue,
-            hostWorld = listing.HomeWorld.Value.InternalName.ExtractText(),
-            slotCount = listing.Slots.Count
-        };
-        var playerInfo = new PlayerInfo(listing.ContentId, listing.Name.TextValue, (ushort)listing.HomeWorld.RowId);
-        Database.AddPlayer(playerInfo); 
-
-        PFListings.Add(extractedListing);
     }
 
     private unsafe static PlayerInfo FetchPlatePacketInfo(nint ptr)

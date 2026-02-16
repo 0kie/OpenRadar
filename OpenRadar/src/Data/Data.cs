@@ -6,14 +6,17 @@ namespace OpenRadar;
 public static class Data
 {
     public static List<ulong> FailedPlateContentIds = new List<ulong>();
-    public static List<ulong> ExtractedContentIds = Enumerable.Repeat<ulong>(0, 8).ToList();
+    //public static List<ulong> ExtractedContentIds = Enumerable.Repeat<ulong>(0, 8).ToList();
+
+    public static PostInfo CurrentPost = new PostInfo(0, new List<byte>(), new List<ulong>());
+
     public static List<PlayerInfo?> ExtractedPlayers = Enumerable.Repeat<PlayerInfo?>(null, 8).ToList();
 
     public static void UpdatePlayerList(PlayerInfo? playerInfo)
     {
         if (playerInfo == null)
             return;
-        int index = ExtractedContentIds.IndexOf(playerInfo.content_id);
+        int index = CurrentPost.contentIds.IndexOf(playerInfo.content_id);
 
         if (index >= 0 && index < ExtractedPlayers.Count)
         {
@@ -27,22 +30,22 @@ public static class Data
 
     public static void ResetExtractedData()
     {
-        ExtractedContentIds = Enumerable.Repeat<ulong>(0, 8).ToList();
+        //ExtractedContentIds = Enumerable.Repeat<ulong>(0, 8).ToList();
+        CurrentPost = new PostInfo(0, new List<byte>(), new List<ulong>());
         ExtractedPlayers = Enumerable.Repeat<PlayerInfo?>(null, 8).ToList();
     }
 
-    public class PlayerInfo
-    {
-        public PlayerInfo(ulong c, string? n, ushort w)
-        {
-            content_id = c;
-            name = n;
-            world = w;
-        }
-        public ulong content_id { get; set; }
-        public string? name { get; set; }
-        public ushort world { get; set; }
-    }
+    public record PlayerInfo(
+        ulong content_id,
+        string? name,
+        ushort world
+    );
+
+    public record PostInfo(
+        ushort dutyId,
+        List<byte> jobIds,
+        List<ulong> contentIds
+    );
 
     public class ListingInformation
     {

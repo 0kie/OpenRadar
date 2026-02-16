@@ -1,6 +1,7 @@
 
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Textures.TextureWraps;
+using Lumina.Excel.Sheets;
 
 namespace OpenRadar;
 
@@ -48,5 +49,21 @@ public static class Util
     {
         var fullText = seString.TextValue;
         return fullText.Contains(part, System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static string WorldIdToName(ushort worldId)
+    {
+        var world = Svc.Data.GetExcelSheet<World>().First(world => world.RowId == worldId).InternalName.ExtractText();
+        return world;
+    }
+
+    public static string DutyIdToName(ushort dutyId)
+    {
+        var dutyName = Svc.Data.GetExcelSheet<ContentFinderCondition>().FirstOrDefault(duty => duty.RowId == dutyId).Name.ExtractText();
+
+        if (dutyName.IsNullOrEmpty())
+            return "Unknown Duty";
+
+        return char.ToUpper(dutyName[0]) + dutyName.Substring(1);
     }
 }
