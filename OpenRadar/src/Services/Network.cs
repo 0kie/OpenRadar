@@ -43,8 +43,7 @@ public static class Network
             }
             if (opCode == 689)
             {
-                //Util.PrintData<ulong>(dataPtr, 10, 10);
-
+                // PlateInfo found
                 var playerInfo = FetchPlatePacketInfo(dataPtr);  
                 if (playerInfo!=null)
                 {
@@ -54,14 +53,14 @@ public static class Network
             }
             if (opCode == 589)
             {
-                // PlateFail
+                // Plate Fail
                 TaskFriendInfoFetch.Enqueue(FailedContentId);
             }
             if (opCode == 282)
             {   
-                // FriendPacket
+                // Friend Packet
                 ulong contentId = *((ulong*)dataPtr+1);
-                string name = Util.ReadUtf8String((byte*)dataPtr+22, 30);
+                string name = Util.ReadUtf8String((byte*)dataPtr+22);
                 ushort worldId = *((ushort*)dataPtr + 8);
                 PlayerInfo playerInfo = new PlayerInfo(contentId, name, worldId);
 
@@ -102,7 +101,7 @@ public static class Network
     private unsafe static PlayerInfo FetchPlatePacketInfo(nint ptr)
     {
         var contentId = *((ulong*)ptr+2);
-        var playerName = Util.ReadUtf8String((byte*)ptr + 421, 30);
+        var playerName = Util.ReadUtf8String((byte*)ptr + 421);
         ushort worldId = *((ushort*)ptr + 16);
 
         return new PlayerInfo(contentId, playerName, worldId);

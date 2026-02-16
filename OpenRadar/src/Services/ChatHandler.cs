@@ -10,7 +10,7 @@ public static class ChatHandler
     {
         if (type == XivChatType.ErrorMessage && Util.ContainsSeString(message, "Unable to display adventurer plate"))
         {
-            message = "";
+            isHandled=true;
         }
     }
 }
