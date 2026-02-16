@@ -16,7 +16,6 @@ public static class Network
 {
     public static List<ListingInformation> PFListings = new();
     public static List<PlayerInfo?> RecentExtractedPlayers = new();
-    private static bool IsReceivingPage = false;
     public static ulong FailedContentId = 0;
 
     public unsafe static void PFExtract(nint dataPtr, ushort opCode, uint sourceActorId, uint targetActorId, NetworkMessageDirection direction)
@@ -30,7 +29,6 @@ public static class Network
                 Data.ResetExtractedData();
                 ushort dutyId = *((ushort*)dataPtr + 20);
                 CurrentPost = new PostInfo(dutyId, new List<byte>(), new List<ulong>());
-                Svc.Log.Information(Util.DutyIdToName(dutyId));
                 for (int i = 0; i < 8; i++)
                 {
                     ulong content_id = *((ulong*)dataPtr + i + 12);

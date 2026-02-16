@@ -68,11 +68,6 @@ public class MainWindow : Window
                             ImGui.TableNextColumn();
                             if (player != null && !player.name.IsNullOrEmpty())
                             {   
-                                /*
-                                if (i == 0)
-                                    ImGui.TextColored(new Vector4(0f, 0.3f, 1f, 1f), player.name);
-                                else
-                                    ImGui.Text(player.name);*/
                                 ImGui.Text(player.name);
                             }
                             else
