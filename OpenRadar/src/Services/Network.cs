@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Dalamud.Game.Gui.PartyFinder.Types;
@@ -43,11 +44,11 @@ public static class Network
             {
                 //Util.PrintData<ulong>(dataPtr, 10, 10);
 
-                var player = FetchPlatePacketInfo(dataPtr);  
-                if (player!=null)
+                var playerInfo = FetchPlatePacketInfo(dataPtr);  
+                if (playerInfo!=null)
                 {
-                    Database.AddPlayer(player);           
-                    Data.UpdatePlayerList(player);
+                    Database.AddPlayer(playerInfo);           
+                    Data.UpdatePlayerList(playerInfo);
                 }
             }
         }
@@ -75,6 +76,8 @@ public static class Network
             hostWorld = listing.HomeWorld.Value.InternalName.ExtractText(),
             slotCount = listing.Slots.Count
         };
+        var playerInfo = new PlayerInfo(listing.ContentId, listing.Name.TextValue, (ushort)listing.HomeWorld.RowId);
+        Database.AddPlayer(playerInfo); 
 
         PFListings.Add(extractedListing);
     }
@@ -85,7 +88,6 @@ public static class Network
         var playerName = Util.ReadUtf8String((byte*)ptr + 421, 30);
         ushort worldId = *((ushort*)ptr + 16);
 
-        //var world = Svc.Data.GetExcelSheet<World>().First(world => world.RowId == worldId).InternalName.ExtractText();
         return new PlayerInfo(contentId, playerName, worldId);
     }
 }

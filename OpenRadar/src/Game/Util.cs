@@ -1,4 +1,5 @@
 
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Textures.TextureWraps;
 
 namespace OpenRadar;
@@ -38,5 +39,11 @@ public static class Util
             len++;
 
         return System.Text.Encoding.UTF8.GetString(b, len);
+    }
+
+    public static bool ContainsSeString(SeString seString, string part)
+    {
+        var fullText = seString.TextValue;
+        return fullText.Contains(part, System.StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -1,0 +1,16 @@
+using Dalamud.Game.Addon.Lifecycle;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.Text.SeStringHandling;
+
+namespace OpenRadar;
+
+public static class ToastHandler
+{
+    public static void ErrorToast(ref SeString message, ref bool isHandled)
+    {
+        if (Util.ContainsSeString(message, "Plate"))
+        {
+            message = "";
+        }
+    }
+}

@@ -12,11 +12,11 @@ public static class TaskPlateInfoFetch
 
     private unsafe static bool PlateInfoFetch(ulong contentId)
     {
-        if (!EzThrottler.Throttle("PlateInfo", 700))
+        if (!EzThrottler.Throttle("PlateInfo", 800))
             return false; 
 
         Svc.Log.Debug("3 - Fetching and Parsing Player Packet");
-        // yes im opening the adventurer card and not showing it LOL
+        // yes im opening the adventurer card and not showing it, idk how to simulate the zoneup packet without opening the addon
         var agentCharaCard = AgentCharaCard.Instance();
         agentCharaCard->OpenCharaCard(contentId);
         agentCharaCard->Hide();

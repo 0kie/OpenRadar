@@ -43,7 +43,9 @@ public class MainWindow : Window
                 
             if (listing != null)
             {
-                ImGuiEx.TextCentered(new Vector4(0f, 1f, 0f, 1f), listing.duty.Name.ToString());
+                var dutyName = listing.duty.Name.ExtractText();
+                var modifiedDutyName = char.ToUpper(dutyName[0]) + dutyName.Substring(1);
+                ImGuiEx.TextCentered(new Vector4(0f, 1f, 0f, 1f), modifiedDutyName);
                 ImGui.Separator();
                 ImGui.Dummy(new Vector2(20,10));
 
@@ -91,8 +93,9 @@ public class MainWindow : Window
                         }
                         else
                         {
+                            ImGui.Image(Util.GetJobIcon(45)!.Handle, new Vector2(20,20));
                             ImGui.TableNextColumn();
-                            ImGui.Text("Empty");
+                            ImGui.TextColored(new Vector4(0f, 1f, 0.2f, 1f), "Empty");
                         }
                     }
                 }
