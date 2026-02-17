@@ -14,7 +14,6 @@ namespace OpenRadar;
 
 public static class Network
 {
-    public static List<ListingInformation> PFListings = new();
     public static List<PlayerInfo?> RecentExtractedPlayers = new();
     public static ulong FailedContentId = 0;
 
@@ -37,7 +36,7 @@ public static class Network
                     CurrentPost.contentIds.Add(content_id);
                     CurrentPost.jobIds.Add(jobId);
 
-                    TaskPlayerTrackQuery.Enqueue(content_id);
+                    TaskLocalDataQuery.Enqueue(content_id);
                 }
             }
             if (opCode == 689)

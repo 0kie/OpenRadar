@@ -7,7 +7,9 @@ public static class TaskFriendInfoFetch
 {
     public static void Enqueue(ulong contentId)
     {
-            P.taskManager.Insert(() => FriendInfoFetch(contentId));
+        // Doesnt seem to put the task right to the beginning. Puts it behind the task that is currently being throttled.
+        // Unsure if it can be changed but would reduce the overall time to fetch players.
+        P.taskManager.Insert(() => FriendInfoFetch(contentId), "FriendInfo");
     }
 
     private unsafe static bool FriendInfoFetch(ulong contentId)

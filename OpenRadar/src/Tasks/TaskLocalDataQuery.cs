@@ -9,15 +9,18 @@ public static class TaskLocalDataQuery
 
     private static void LocalDataQuery(ulong contentId)
     {
-        Svc.Log.Debug($"2 - Querying Local Database: {contentId}");
-        var playerInfo = Database.GetPlayerByContentId(contentId);
-        if (playerInfo == null)
+        if (contentId != 0)
         {
-            TaskPlateInfoFetch.Enqueue(contentId);
-        }
-        else
-        {
-            Data.UpdatePlayerList(playerInfo);
+            Svc.Log.Debug($"1 - Querying Local Database: {contentId}");
+            var playerInfo = Database.GetPlayerByContentId(contentId);
+            if (playerInfo == null)
+            {
+                TaskPlayerTrackQuery.Enqueue(contentId);
+            }
+            else
+            {
+                Data.UpdatePlayerList(playerInfo);
+            }
         }
     }
 }

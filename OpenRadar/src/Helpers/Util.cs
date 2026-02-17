@@ -53,13 +53,13 @@ public static class Util
 
     public static string WorldIdToName(ushort worldId)
     {
-        var world = Svc.Data.GetExcelSheet<World>().First(world => world.RowId == worldId).InternalName.ExtractText();
+        var world = Svc.Data.GetExcelSheet<World>().First(world => world.RowId == worldId).InternalName.ToString();
         return world;
     }
 
     public static string DutyIdToName(ushort dutyId)
     {
-        var dutyName = Svc.Data.GetExcelSheet<ContentFinderCondition>().FirstOrDefault(duty => duty.RowId == dutyId).Name.ExtractText();
+        var dutyName = Svc.Data.GetExcelSheet<ContentFinderCondition>().FirstOrDefault(duty => duty.RowId == dutyId).Name.ToString();
 
         if (dutyName.IsNullOrEmpty())
             return "Unknown Duty";

@@ -9,18 +9,15 @@ public static class TaskPlayerTrackQuery
 
     private static void QueryPlayerTrack(ulong contentId)
     {
-        if (contentId != 0)
+        Svc.Log.Debug($"2 - Querying PlayerTrack: {contentId}");
+        var playerInfo = PlayerTrackInterop.Extract(contentId);
+        if (playerInfo == null)
         {
-            Svc.Log.Debug($"1 - Querying PlayerTrack: {contentId}");
-            var playerInfo = PlayerTrackInterop.Extract(contentId);
-            if (playerInfo == null)
-            {
-                TaskLocalDataQuery.Enqueue(contentId);
-            }
-            else
-            {
-                Data.UpdatePlayerList(playerInfo);
-            }
+            TaskPlateInfoFetch.Enqueue(contentId);
+        }
+        else
+        {
+            Data.UpdatePlayerList(playerInfo);
         }
     }
 }
