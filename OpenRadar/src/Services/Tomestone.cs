@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ECommons.ExcelServices;
 using Lumina;
 using Newtonsoft.Json.Linq;
 using OpenRadar;
+using OpenRadar.Tasks;
 using SQLitePCL;
 
 namespace Openradar;
@@ -44,8 +47,7 @@ public static class Tomestone
 
         if (player != null && postInfo != null && postInfo.dutyId != 0)
         {
-            var worldName = Util.WorldIdToName(player.world);
-            var prog = await FetchPlayerProg(player.name!, worldName, postInfo.dutyId);
+            var prog = await FetchPlayerProg(player, postInfo.dutyId);
             Data.ProgPoints[index] = prog;
         }
     }
@@ -61,14 +63,17 @@ public static class Tomestone
         // - hidden (player has a hidden profile)
         // - invalid (not a valid duty category (normal raids etc))
         // - null (inaccessible json, maybe something broke)
+        // -- inaccessible meaning player does not exist usually
         // i should probably make an enum
 
 
         return "poo";
     }
 
-    private static async Task<string?> FetchPlayerProg(string name, string world, ushort dutyId) 
+    private static async Task<string?> FetchPlayerProg(PlayerInfo player, ushort dutyId) 
     {
+        var name = player.name!;
+        var world = Util.WorldIdToName(player.world);
         var dutyInfo = Encounters.DataQuery(dutyId);
         Svc.Log.Debug("Fetching LodestoneId");
         var lodestoneId = await ResolveRedirectAndGetLodestoneId(name, world);
@@ -76,7 +81,10 @@ public static class Tomestone
         if (lodestoneId == null || dutyInfo == null)
         {
             // at this point, it should try delete the entry from playertrack/local and use tasks to fetch new player name and world
-            Svc.Log.Error($"Failed to retrieve {name}@{world}'s lodestone. Local Databases probably contain old name.");
+            // call plate, requires contentid though
+
+            Svc.Log.Error($"Failed to retrieve {name}@{world}'s lodestone. Local Databases probably contain old name. Fetching new status.");
+            TaskPlateInfoFetch.Enqueue(player.content_id);
             return null;
         }
         Svc.Log.Debug($"Got LodestoneId ");
@@ -86,13 +94,45 @@ public static class Tomestone
         if (pageJson == null)
             return null;
 
-        Svc.Log.Debug(pageJson);
+        //Svc.Log.Debug(pageJson);
         return ParseJson(pageJson, dutyInfo);
     }
 
+    private static string? ParseLoop(JArray duties, Encounters.Info dutyInfo)
+    {
+        for (int i = 0; i < duties.Count; i++)
+        {
+            var duty = duties[i];
+            var dutyName = duty["zoneName"];
+            if (dutyName!.ToString().ToLower() == dutyInfo.name.ToLower())
+            {
+                if (dutyInfo.savageParent != null && // is savage
+                    dutyInfo.name.ToLower() == dutyInfo.savageParent!.ToLower() &&  // selected duty is parent
+                    (i+1) < duties.Count && // verifies that it is before door boss
+                    duty["activity"] as JObject != null) // before door boss is complete
+                {
+                    continue; // go to after door boss as before is complete
+                }
+
+                var progression = duty["progression"] as JObject;
+                if (progression != null)
+                {
+                    return progression["percent"]!.ToString(); // in progress
+                }
+
+                if (duty["activity"] as JObject != null)
+                {
+                    return "done"; // they've completed that duty
+                }; // progression and activity do not exist, therefore not started at all
+            }
+        }
+        return "notstarted";
+    }
+
+
     private static string? ParseJson(string json, Encounters.Info dutyInfo)
     {
-        // ts so ugly :wilted-rose:
+        // honestly this is horrible. parsing raw html is probably less of a mess. works though
         try
         {
             var jsonResponse = JToken.Parse(json);
@@ -111,45 +151,25 @@ public static class Tomestone
             if (dutyCategory!.Count == 0)
                 return "notstarted";
 
-            foreach (var duty in dutyCategory)
-            {
-                var dutyName = duty["zoneName"];
-                if (dutyName!.ToString() == dutyInfo.name)
-                {
-                    var progression = duty["progression"] as JObject;
-                    if (progression == null)
-                    {
-                        return "done";
-                    }
-                    var prog = progression["percent"]!.ToString();
-                    return prog;
-                }
-            }
 
-            foreach (var duty in dutyCategory)
+            if (!dutyInfo.savageParent.IsNullOrEmpty())
             {
-                // what
-                var encounters2 = duty["encounters"] as JArray;
-                if (encounters2 == null)
+                foreach (var savageTier in dutyCategory)
                 {
-                    continue;
-                }
-                foreach (var encounter in encounters2)
-                {
-                    var dutyName = encounter["zoneName"];
-                    if (dutyName!.ToString() == dutyInfo.name)
+                    if (savageTier["zoneName"]!.ToString().ToLower() == dutyInfo.savageParent!.ToLower())
                     {
-                        var progression = encounter["progression"] as JObject;
-                        if (progression == null)
-                        {
-                            return "done";
-                        }
-                        var prog = progression["percent"]!.ToString();
-                        return prog;
+                        
+                        var savageDuties = savageTier["encounters"] as JArray;
+                        if (savageDuties == null)
+                            return "done"; // encounters doesn't exist, that means they have completed the tier
+                        var prog = ParseLoop(savageDuties, dutyInfo);
+                        if (prog != null)
+                            return prog;
                     }
                 }
+                return "notstarted";
             }
-            return "done";
+            return ParseLoop(dutyCategory, dutyInfo);
         }
         catch {}
 
@@ -161,13 +181,13 @@ public static class Tomestone
         try
         {
             using (HttpClient client = new HttpClient())
-        {
-            HttpResponseMessage response = await client.GetAsync(url);
-            if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadAsStringAsync();
+                HttpResponseMessage response = await client.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadAsStringAsync();
+                }
             }
-        }
         }
         catch
         {

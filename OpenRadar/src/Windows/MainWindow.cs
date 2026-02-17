@@ -20,8 +20,8 @@ public class MainWindow : Window
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoFocusOnAppearing;
         SizeConstraints = new()
         {
-            MinimumSize = new Vector2(350, 300),
-            MaximumSize = new Vector2(350, 300)
+            MinimumSize = new Vector2(400, 300),
+            MaximumSize = new Vector2(400, 300)
         };
         P.windowSystem.AddWindow(this);
     }
@@ -53,7 +53,7 @@ public class MainWindow : Window
                 if (ImGui.BeginTable("Players", 4, ImGuiTableFlags.BordersH | ImGuiTableFlags.SizingFixedFit))
                 {
                     ImGui.TableSetupColumn("##job", ImGuiTableColumnFlags.None, 20f);
-                    ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.None, 110f);
+                    ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.None, 140f);
                     ImGui.TableSetupColumn("World", ImGuiTableColumnFlags.None, 100f);
                     ImGui.TableSetupColumn("Prog", ImGuiTableColumnFlags.None, 80f);
                     ImGui.TableHeadersRow();

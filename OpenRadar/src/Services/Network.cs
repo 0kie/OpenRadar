@@ -26,6 +26,7 @@ public static class Network
             {
                 // content_ids from pf post
                 Data.ResetExtractedData();
+                Util.PrintData<byte>(dataPtr, 20, 20);
                 ushort dutyId = *((ushort*)dataPtr + 20);
                 CurrentPost = new PostInfo(dutyId, new List<byte>(), new List<ulong>());
                 for (int i = 0; i < 8; i++)
@@ -68,9 +69,21 @@ public static class Network
         }
     }
 
-    public unsafe static void ListingHostExtract(IPartyFinderListing listing, IPartyFinderListingEventArgs args)
+    public static void ListingHostExtract(IPartyFinderListing listing, IPartyFinderListingEventArgs args)
     {
         var playerInfo = new PlayerInfo(listing.ContentId, listing.Name.TextValue, (ushort)listing.HomeWorld.RowId);
+
+        // This will be awkward to implement and its low priority
+        // very much doubt it gets available roles from pf post, rather gets it from the listings and stores locally
+        /*
+        Svc.Log.Debug($"{listing.Name}: ");
+        var text = "";
+        foreach (var job in listing.Slots)
+        {
+            text += $"{job.Accepting.First().ToString()} ";
+        }
+        Svc.Log.Debug(text);*/
+
         Database.AddPlayer(playerInfo); 
     }
 
