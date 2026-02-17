@@ -32,6 +32,7 @@ public static class Tomestone
     // A hidden json exists called character-contents, still requires lodestone ID but lightweight and very good
 
     // remove this html agility pack shit
+    private static bool RefetchedAlready = false;
 
     public static void GetPlayerProg(Data.PlayerInfo playerInfo, int index)
     {
@@ -80,12 +81,19 @@ public static class Tomestone
 
         if (lodestoneId == null || dutyInfo == null)
         {
-            // at this point, it should try delete the entry from playertrack/local and use tasks to fetch new player name and world
-            // call plate, requires contentid though
-
-            Svc.Log.Error($"Failed to retrieve {name}@{world}'s lodestone. Local Databases probably contain old name. Fetching new status.");
-            TaskPlateInfoFetch.Enqueue(player.content_id);
-            return null;
+            if (!RefetchedAlready)
+            {
+                Svc.Log.Warning($"{name}@{world} has changed name/world. Refetching and updating local database...");
+                TaskPlateInfoFetch.Enqueue(player.content_id);
+                RefetchedAlready = true;
+                return null;
+            }
+            else
+            {
+                Svc.Log.Error($"{name}@{world} does not exist in tomestone's database. Giving up...");
+                RefetchedAlready = false;
+                return "?";
+            }
         }
         Svc.Log.Debug($"Got LodestoneId ");
         var progPageUrl = $"https://tomestone.gg/character-contents/{lodestoneId}/{name.ToLower().Replace(" ", "-")}/progress?encounterExpansion={dutyInfo.expansion.ToLower()}";
