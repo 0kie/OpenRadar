@@ -75,6 +75,18 @@ public static class Encounters
 
     public static Vector4 ProgToColour(string prog, string dutyName)
     {
+        // first decypher prog
+        string[] progParts = prog.Split(' ');
+        if (progParts.Length > 1)
+        {
+            // ultimate!
+        }
+        else
+        {
+            // not ultimate
+        }
+
+
         // grey
         // green
         // blue

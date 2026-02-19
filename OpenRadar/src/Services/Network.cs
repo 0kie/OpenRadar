@@ -1,8 +1,12 @@
 using System.Collections.Generic;
+using Dalamud.Game.Agent;
+using Dalamud.Game.Agent.AgentArgTypes;
 using Dalamud.Game.Gui.PartyFinder.Types;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using ECommons.DalamudServices.Legacy;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Client.UI.Arrays.Common;
 using OpenRadar.Tasks;
 
 namespace OpenRadar;
@@ -16,31 +20,9 @@ public static class Network
     {        
         if (direction == NetworkMessageDirection.ZoneDown)
         {
-
-            if (opCode == 760)
-            {
-                // content_ids from pf post
-                Data.ResetExtractedData();
-                ushort dutyId = *((ushort*)dataPtr + 20);
-                //CurrentPost = new PostInfo(dutyId, new List<byte>(), new List<JobFlags>(), new List<ulong>());
-                CurrentPost = new PostInfo(dutyId, new List<ISharedImmediateTexture?>(), new List<IDalamudTextureWrap?>(), new List<ulong>());
-                for (int i = 0; i < 8; i++)
-                {
-                    ulong content_id = *((ulong*)dataPtr + i + 12);
-                    byte jobId = *((byte*)dataPtr + i + 224);
-                    ulong slotAccepting = *((ulong*)dataPtr + i + 20);
-
-                    CurrentPost.contentIds.Add(content_id);
-                    CurrentPost.jobIcons.Add(Util.GetJobIcon(jobId));
-                    CurrentPost.roleIcons.Add(Util.JobFlagsToRoleTexture((JobFlags)slotAccepting));
-
-                    TaskLocalDataQuery.Enqueue(content_id);
-                }
-            }
             if (opCode == 689)
             {
                 // PlateInfo found
-                Svc.Log.Information("Holy shit its a packet");
                 var playerInfo = FetchPlatePacketInfo(dataPtr);  
                 if (playerInfo!=null)
                 {
@@ -70,7 +52,6 @@ public static class Network
     public static void ListingHostExtract(IPartyFinderListing listing, IPartyFinderListingEventArgs args)
     {
         var playerInfo = new PlayerInfo(listing.ContentId, listing.Name.TextValue, (ushort)listing.HomeWorld.RowId);
-
         Database.AddPlayer(playerInfo); 
     }
 
