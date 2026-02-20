@@ -19,9 +19,7 @@ public static class Util
             return null;
         if (jobId != null)
         {
-            Svc.Log.Debug($"ui/icon/062000/0621{jobId}.tex");
             var jobTexture = Svc.Texture.GetFromGame($"ui/icon/062000/0621{jobId}.tex");
-            Svc.Log.Debug($"{jobTexture}");
             return jobTexture;
         }
         return null;

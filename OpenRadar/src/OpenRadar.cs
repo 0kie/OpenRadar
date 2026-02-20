@@ -2,8 +2,6 @@
 using ECommons.Configuration;
 using Dalamud.Game.Addon.Lifecycle;
 using ECommons.Automation.NeoTaskManager;
-using Dalamud.Game;
-using Dalamud.Utility.Signatures;
 
 namespace OpenRadar;
 
@@ -43,7 +41,6 @@ public sealed class OpenRadar : IDalamudPlugin
         taskManager = new(new(abortOnTimeout: true, timeLimitMS: 25000, showDebug: false));
     
         Svc.PluginInterface.UiBuilder.Draw += windowSystem.Draw;
-        Svc.GameNetwork.NetworkMessage += Network.PFExtract;
         Svc.PfGui.ReceiveListing += Network.ListingHostExtract;
         Svc.Toasts.ErrorToast += ToastHandler.ErrorToast;
         Svc.Chat.ChatMessage += ChatHandler.PlateError;
@@ -64,7 +61,6 @@ public sealed class OpenRadar : IDalamudPlugin
     public void Dispose()
     {
         Svc.PluginInterface.UiBuilder.Draw -= windowSystem.Draw;
-        Svc.GameNetwork.NetworkMessage -= Network.PFExtract;
         Svc.PfGui.ReceiveListing -= Network.ListingHostExtract;
         Svc.Toasts.ErrorToast -= ToastHandler.ErrorToast;
         Svc.Chat.ChatMessage -= ChatHandler.PlateError;

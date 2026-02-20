@@ -76,7 +76,6 @@ public static class Tomestone
         var name = player.name!;
         var world = Util.WorldIdToName(player.world);
         var dutyInfo = Encounters.DataQuery(dutyId);
-        Svc.Log.Debug("Fetching LodestoneId");
         var lodestoneId = await ResolveRedirectAndGetLodestoneId(name, world);
 
         if (lodestoneId == null || dutyInfo == null)
@@ -95,7 +94,6 @@ public static class Tomestone
                 return "?";
             }
         }
-        Svc.Log.Debug($"Got LodestoneId ");
         var progPageUrl = $"https://tomestone.gg/character-contents/{lodestoneId}/{name.ToLower().Replace(" ", "-")}/progress?encounterExpansion={dutyInfo.expansion.ToLower()}";
         Svc.Log.Debug(progPageUrl);
         var pageJson = await FetchPageJson(progPageUrl);
