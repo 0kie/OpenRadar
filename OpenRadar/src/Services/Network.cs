@@ -13,13 +13,4 @@ public static class Network
         var playerInfo = new PlayerInfo(listing.ContentId, listing.Name.TextValue, (ushort)listing.HomeWorld.RowId);
         Database.AddPlayer(playerInfo); 
     }
-
-    private unsafe static PlayerInfo FetchPlatePacketInfo(nint ptr)
-    {
-        var contentId = *((ulong*)ptr+2);
-        var playerName = Util.ReadUtf8String((byte*)ptr + 421);
-        ushort worldId = *((ushort*)ptr + 16);
-
-        return new PlayerInfo(contentId, playerName, worldId);
-    }
 }

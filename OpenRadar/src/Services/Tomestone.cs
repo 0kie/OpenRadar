@@ -16,22 +16,15 @@ namespace Openradar;
 
 public static class Tomestone
 {
-    // Tomestone's API still is WIP and requires an auth key, thus this solves redirect and parses html. 
+    // Tomestone's API still is WIP and requires an auth key, thus this solves redirect and parses hidden json. 
     // Unsure whether this is generally frowned upon. Also involves large packets.
     // Will break if anti-bot measures are implemented.
-    // Later implementation should ask user for auth key and heavily rate limit parsing html directly.
-    // First implementation is purely just parsing html because it's easier. The API is confusing.
 
     // The API does not offer a method of fetching best prog for an activity, the response bodies are huge too
     // User fetches from progression-graph and then finds the lowest value of the many bestPercent
-    // although is a single request, progression-graph response body can be very big, html request may be smaller (cap).
     // Can fetch based on activity but its worse in every way.
-    // Pulling redirect, parsing html seems easier and faster
-    // Could check if the duty is dawntrail and not need to find redirect location, as /character-name/world/player%20name/progress?... returns dawntrail progress by default
 
     // A hidden json exists called character-contents, still requires lodestone ID but lightweight and very good
-
-    // remove this html agility pack shit
     private static bool RefetchedAlready = false;
 
     public static void GetPlayerProg(Data.PlayerInfo playerInfo, int index)
@@ -51,24 +44,6 @@ public static class Tomestone
             var prog = await FetchPlayerProg(player, postInfo.dutyId);
             Data.ProgPoints[index] = prog;
         }
-    }
-
-    private static string PrettifyProg(string prog)
-    {
-        // do some font awesome business
-        // cba rn
-        // options are 
-        // - prog point (player is in progress)
-        // - done (player has complete the fight)
-        // - notstarted (player is yet to start)
-        // - hidden (player has a hidden profile)
-        // - invalid (not a valid duty category (normal raids etc))
-        // - null (inaccessible json, maybe something broke)
-        // -- inaccessible meaning player does not exist usually
-        // i should probably make an enum
-
-
-        return "poo";
     }
 
     private static async Task<string?> FetchPlayerProg(PlayerInfo player, ushort dutyId) 

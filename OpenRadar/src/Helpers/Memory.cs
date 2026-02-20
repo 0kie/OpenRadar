@@ -46,7 +46,7 @@ public unsafe class Memory : IDisposable
         var contentId = *((ulong*)dataPtr+2);
         var playerName = Util.ReadUtf8String((byte*)dataPtr + 421);
         ushort worldId = *((ushort*)dataPtr + 16);
-        
+
         var playerInfo = new PlayerInfo(contentId, playerName, worldId);
         if (playerInfo!=null)
         {
@@ -111,9 +111,13 @@ public unsafe class Memory : IDisposable
 
     public void Dispose()
     {
+        onPostPacketReceiveHook.Disable();
         onPostPacketReceiveHook.Dispose();
+        onFriendInfoPacketReceiveHook.Disable();
         onFriendInfoPacketReceiveHook.Dispose();
+        onPlateInfoPacketFailHook.Disable();
         onPlateInfoPacketFailHook.Dispose();
+        handleCurrentCharaCardDataPacketHook.Disable();
         handleCurrentCharaCardDataPacketHook.Dispose();
     }
 }
