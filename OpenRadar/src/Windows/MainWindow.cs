@@ -1,15 +1,6 @@
-﻿using System.Net.Mail;
-using System.Net.WebSockets;
-using Dalamud.Interface;
-using Dalamud.Interface.Textures.TextureWraps;
-using Dalamud.Interface.Utility;
+﻿using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
-using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Lumina.Excel.Sheets;
-using Microsoft.Win32.SafeHandles;
-using Openradar;
 
 namespace OpenRadar.Windows;
 
@@ -78,7 +69,7 @@ public class MainWindow : Window
                             }
                             else
                             {
-                                ImGui.TextColored(new Vector4(1f, 0.7f, 0.2f, 1f), "Finding Player...");
+                                ImGui.TextColored(new Vector4(1f, 0.7f, 0.2f, 1f), "...");
                             }
                             ImGui.TableNextColumn();
                             if (player == null || player.world == 0)
@@ -90,26 +81,25 @@ public class MainWindow : Window
                             ImGui.TableNextColumn();
                             var prog = Data.ProgPoints[i];
 
-                            if (prog == "fresh")
+                            if (prog == null)
                             {
-                                ImGui.TextColored(new Vector4(1f, 0f, 0f, 1f), "Fresh");
-                            }
-                            else if (prog == "done")
-                            {
-                                ImGui.TextColored(new Vector4(0.898f, 0.8f, 0.502f, 1f), "Cleared");
-                            }
-                            else if (prog == "hidden")
-                            {
-                                ImGui.TextColored(new Vector4(1f, 1f, 1f, 0.25f), "Hidden");
-                            }
-                            else if (prog != null)
-                                ImGui.TextColored(Encounters.ProgToColour(prog, ""), prog);
-                            else
-                            {
+                                ImGui.Text("-");
+                                /*
                                 using (var font = ImRaii.PushFont(UiBuilder.IconFont))
                                 {
                                     ImGui.TextColored(new Vector4(1f, 0.7f, 0.2f, 1f),FontAwesomeIcon.Spinner.ToIconString());
-                                }
+                                }*/
+                            }
+                            else
+                            {
+                                var (colour, text) = prog switch
+                                {
+                                    "fresh"  => (new Vector4(1f, 0f, 0f, 1f), "Fresh"),
+                                    "done"   => (new Vector4(0.898f, 0.8f, 0.502f, 1f), "Cleared"),
+                                    "hidden" => (new Vector4(1f, 1f, 1f, 0.25f), "Hidden"),
+                                    _ => (Encounters.ProgToColour(prog, listing.dutyId), prog)
+                                };
+                                ImGui.TextColored(colour, text);
                             }
                         }
                         else

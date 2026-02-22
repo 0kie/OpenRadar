@@ -2,33 +2,29 @@
 using ECommons.Configuration;
 using Dalamud.Game.Addon.Lifecycle;
 using ECommons.Automation.NeoTaskManager;
+using Dalamud.Game.Command;
 
 namespace OpenRadar;
 
 public sealed class OpenRadar : IDalamudPlugin
 {
-    public static string Name => "OpenRadar";
-
     internal static OpenRadar P = null!;
     private Configuration config = null!;
     public static Configuration C => P.config;
 
 
-    internal WindowSystem windowSystem = null!;
-    internal MainWindow mainWindow = null!;
-    internal ConfigWindow configWindow = null!;
+    public WindowSystem windowSystem = null!;
+    public MainWindow mainWindow = null!;
+    public ConfigWindow configWindow = null!;
 
-    internal TaskManager taskManager = null!;
-    internal Memory Memory = null!;
+    public TaskManager taskManager = null!;
+    public Memory Memory = null!;
 
     public OpenRadar(IDalamudPluginInterface pi)
     {
         P = this;
-        ECommonsMain.Init(pi, P, Module.DalamudReflector, Module.ObjectFunctions);
-        new ECommons.Schedulers.TickScheduler(Load);
-    }
-    public void Load()
-    {
+        Svc.Init(pi);
+        
         EzConfig.Migrate<Configuration>();
         config = EzConfig.Init<Configuration>();
 
@@ -55,38 +51,35 @@ public sealed class OpenRadar : IDalamudPlugin
         {
             configWindow.IsOpen = true;
         };
-        EzCmd.Add("/openradar", OnCommand);
+
+        if (C.FirstInstalled)
+        {
+            if (PlayerTrackInterop.Installed())
+                C.PlayerTrackReader = true;
+            configWindow.IsOpen = true;
+        }
+
+        Svc.Commands.AddHandler("/openradar" , new CommandInfo(OnCommand)
+        {
+            HelpMessage = "Displays Config Window"
+        });
     }
+
 
     public void Dispose()
     {
+        P.Memory.Dispose();
         Svc.PluginInterface.UiBuilder.Draw -= windowSystem.Draw;
         Svc.PfGui.ReceiveListing -= Network.ListingHostExtract;
         Svc.Toasts.ErrorToast -= ToastHandler.ErrorToast;
         Svc.Chat.ChatMessage -= ChatHandler.PlateError;
         Svc.AddonLifecycle.UnregisterListener(AddonEvent.PostDraw, "LookingForGroupDetail", AddonHandler.LookingForGroupDetail);
+        Svc.Commands.RemoveHandler("/openradar");
         ECommonsMain.Dispose();
     }
 
     private void OnCommand(string command, string args)
     {
-        var subcommands = args.Split(' ');
-
-        if (subcommands.Length == 0 || args == "")
-        {
-            configWindow.IsOpen = !configWindow.IsOpen;
-            return;
-        }
-        else
-        {
-            switch(args)
-            {
-                case "config":
-                    configWindow.IsOpen = !configWindow.IsOpen;
-                    break;
-                default:
-                    return;
-            }
-        }
+        configWindow.IsOpen = !configWindow.IsOpen;
     }
 }

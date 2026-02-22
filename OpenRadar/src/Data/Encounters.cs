@@ -1,13 +1,11 @@
-using System.Globalization;
-using System.IO;
+using System;
 using Lumina.Excel.Sheets;
-using Serilog.Filters;
 
 namespace OpenRadar;
 
 public static class Encounters
 {
-    private static readonly ushort[][] SavageRowIds =
+    private static ushort[][] SavageRowIds =
     {
         [103, 104, 105, 106],       // aar
 
@@ -32,6 +30,8 @@ public static class Encounters
         [1069, 1071, 1073, 1075]    // dawntrail   t3
     };
 
+    private static ushort[] Ultimates = [280, 539, 694, 788, 908, 1006];
+
     public record Info
     (
         string? category,
@@ -41,6 +41,15 @@ public static class Encounters
         string? savageParent = null
     );
 
+    public static class Colour
+    {
+        public static Vector4 Grey   = new(0.333f, 0.333f, 0.333f, 1f);
+        public static Vector4 Green  = new(0.118f, 1f, 0f, 1f);
+        public static Vector4 Blue   = new(0f, 0.439f, 1f, 1f);
+        public static Vector4 Purple = new(0.639f, 0.208f, 0.933f, 1f);
+        public static Vector4 Orange = new(1f, 0.502f, 0f, 1f);
+        public static Vector4 Pink   = new(0.887f, 0.408f, 0.659f, 1f);
+    }
     public static Info? DataQuery(ushort dutyId)
     {
         var duty = Svc.Data.GetExcelSheet<ContentFinderCondition>().FirstOrDefault(duty => duty.RowId == dutyId);
@@ -74,36 +83,118 @@ public static class Encounters
         return new Info(contentCategory, dutyNameClean, dutyExpansion);
     }
 
-    public static Vector4 ProgToColour(string prog, string dutyName)
+    public static Vector4 ProgToColour(string prog, ushort dutyId)
     {
         // first decypher prog
         Vector4 fail = new Vector4(1f, 1f, 1f, 1f);
         string[] progParts = prog.Split(' ');
-        bool ultimate = false;
+        bool ultimateOrDoor = false;
         float? progPercent = null;
         if (progParts.Length > 1)
-        {
-            ultimate = true;
-        }
+            ultimateOrDoor = true;
+
         var cleaned = progParts[0].Replace("%", "");
         if (float.TryParse(cleaned, out float parsed))
-        {
             progPercent = parsed;
-        }
-        if (progPercent == null || ultimate)
-        {
-            return fail;
-        }
-        float p = progPercent.Value;
 
-        return p switch
+
+        if (progPercent == null)
+            return fail;
+
+        float percent = progPercent.Value;
+
+        if (!ultimateOrDoor)
         {
-            >= 75f => new Vector4(0.333f, 0.333f, 0.333f, 1f),    // Grey
-            >= 50f => new Vector4(0.118f, 1f, 0f, 1f),          // Green
-            >= 25f => new Vector4(0f, 0.439f, 1f, 1f),        // Blue
-            >= 10f => new Vector4(0.639f, 0.208f, 0.933f, 1f),        // Purple
-            >= 3f => new Vector4(1f, 0.502f, 0f, 1f),         // Orange
-            _      => new Vector4(0.887f, 0.408f, 0.659f, 1f)         // Pink
-        };
+            return percent switch
+            {
+                > 75f => Colour.Grey,
+                > 50f => Colour.Green,
+                > 25f => Colour.Blue,
+                > 10f => Colour.Purple,
+                > 3f => Colour.Orange,
+                _ => Colour.Pink
+            };
+        }
+        else
+        {
+            var part = progParts[1];
+
+            if (!int.TryParse(part.AsSpan(1), out int phase))
+                return fail;
+
+            if (part[0] == 'I')
+                phase = -phase;
+
+            if (!Ultimates.Contains(dutyId)) // door boss, some savageparents
+            {
+                return (percent, phase) switch
+                {
+                    (>50f, 1) => Colour.Grey,
+                    (>20f, 1) => Colour.Green,
+                    (_, 1) => Colour.Blue,
+                    (>50f, 2) => Colour.Purple,
+                    (>20f, 2) => Colour.Orange,
+                    (_, _) => Colour.Pink
+                };
+            }
+            return dutyId switch
+            {
+                1006 => phase switch // fru
+                {
+                    1 => Colour.Grey,
+                    2 => Colour.Green,
+                    3 => Colour.Blue,
+                    4 => Colour.Purple,
+                    _ when percent < 10f => Colour.Orange,
+                    _ => Colour.Pink
+                },
+                908 => phase switch // top
+                {
+                    1 => Colour.Grey,
+                    2 => Colour.Green,
+                    3 => Colour.Blue,
+                    4 => Colour.Purple,
+                    5 => Colour.Orange,
+                    _ => Colour.Pink
+                },
+                788 => phase switch // dsr
+                {
+                    <=2 => Colour.Grey,
+                    3 => Colour.Green,
+                    4 or -1 => Colour.Blue,
+                    5 => Colour.Purple,
+                    6 => Colour.Orange,
+                    _ => Colour.Pink
+                },
+                694 => phase switch // tea
+                {
+                    1 or -1 => Colour.Grey,
+                    2 => Colour.Green,
+                    -2 => Colour.Blue,
+                    3 => Colour.Purple,
+                    _ when percent > 10f => Colour.Orange,
+                    _ => Colour.Pink
+                },
+                539 => phase switch // uwu
+                {
+                    1 => Colour.Grey,
+                    2 => Colour.Green,
+                    3 => Colour.Blue,
+                    _ when percent > 50f => Colour.Purple,
+                    _ when percent > 10f => Colour.Orange,
+                    _ => Colour.Pink
+                },
+                280 => phase switch // ucob
+                {
+                    1 => Colour.Grey,
+                    2 => Colour.Green,
+                    3 => Colour.Blue,
+                    4 => Colour.Purple,
+                    _ when percent > 10f => Colour.Orange,
+                    _ => Colour.Pink
+                },
+                _ => fail
+            };
+        }
     }
 }

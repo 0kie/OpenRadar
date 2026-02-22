@@ -6,7 +6,11 @@ namespace OpenRadar;
 
 public partial class Configuration
 {
-    public int Version { get; set; } = 0;
+    public bool FirstInstalled { get; set;} = true;
+    public bool RequestPackets { get; set;} = false;
+    public bool PlayerTrackReader { get; set;} = false;
+    public bool QueryTomestone { get; set;} = true;
+
 
     public void Save()
     {

@@ -1,9 +1,4 @@
-using System.ComponentModel.Design;
-using Dalamud.Game;
-using Dalamud.Plugin.SelfTest;
-using ECommons.EzHookManager;
 using ECommons.Throttlers;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace OpenRadar.Tasks;
 
@@ -18,6 +13,8 @@ public static class TaskPlateInfoFetch
     {
         if (!EzThrottler.Throttle("PlateInfo", 900))
             return false; 
+        ToastHandler.handled = true;
+        ChatHandler.handled = true;
         Svc.Log.Debug($"3 - Fetching and Parsing Player Packet {contentId}");
         P.Memory.RequestPlateInfo(contentId);
         Network.FailedContentId = contentId;

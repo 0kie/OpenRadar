@@ -1,16 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ECommons.ExcelServices;
-using Lumina;
 using Newtonsoft.Json.Linq;
 using OpenRadar;
 using OpenRadar.Tasks;
-using SQLitePCL;
 
 namespace Openradar;
 
@@ -26,6 +21,7 @@ public static class Tomestone
 
     // A hidden json exists called character-contents, still requires lodestone ID but lightweight and very good
     private static bool RefetchedAlready = false;
+    public static bool CurrentlyRequesting = false;
 
     public static void GetPlayerProg(Data.PlayerInfo playerInfo, int index)
     {
@@ -81,6 +77,7 @@ public static class Tomestone
 
     private static string? ParseLoop(JArray duties, Encounters.Info dutyInfo)
     {
+        bool? postDoorBoss = null;
         for (int i = 0; i < duties.Count; i++)
         {
             var duty = duties[i];
@@ -89,16 +86,29 @@ public static class Tomestone
             {
                 if (dutyInfo.savageParent != null && // is savage
                     dutyInfo.name.ToLower() == dutyInfo.savageParent!.ToLower() &&  // selected duty is parent
-                    (i+1) < duties.Count && // verifies that it is before door boss
-                    duty["activity"] as JObject != null) // before door boss is complete
+                    (i+1) < duties.Count) // verifies that it is before door boss
                 {
-                    continue; // go to after door boss as before is complete
+                    if (duty["activity"] as JObject != null) // before door boss is complete
+                    {
+                        postDoorBoss = true;
+                        continue;
+                    }
+                    else
+                        postDoorBoss = false;
                 }
 
                 var progression = duty["progression"] as JObject;
                 if (progression != null)
                 {
-                    return progression["percent"]!.ToString(); // in progress
+                    string progString = progression["percent"]!.ToString();
+                    if (postDoorBoss != null)
+                    {
+                        if (postDoorBoss == false)
+                            progString += " P1";
+                        else
+                            progString += " P2";
+                    }
+                    return progString; // in progress
                 }
 
                 if (duty["activity"] as JObject != null)

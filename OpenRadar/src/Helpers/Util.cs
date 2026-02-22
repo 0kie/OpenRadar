@@ -1,13 +1,9 @@
 
-using System;
 using Dalamud.Game.Gui.PartyFinder.Types;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Interface;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
-using Microsoft.VisualBasic;
 
 namespace OpenRadar;
 
@@ -56,7 +52,7 @@ public static class Util
 
         for (int row = 0; row < totalRows; row++)
         {
-            string packetInfoRow = "";
+            string packetInfoRow = $"{row}: ";
             for (int col = 0; col < infoPerRow; col++)
             {
                 T dataPoint = *(ptr + row * infoPerRow + col);

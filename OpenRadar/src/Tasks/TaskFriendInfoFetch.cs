@@ -14,11 +14,16 @@ public static class TaskFriendInfoFetch
 
     private unsafe static bool FriendInfoFetch(ulong contentId)
     {
+        if (!C.RequestPackets)
+            return true;
         if (!EzThrottler.Throttle("FriendInfo", 3700))
             return false; 
-        Svc.Log.Debug($"4 - Fetching and Parsing Friend Packet: {contentId}");
-        // apparently you can request player's info without being a friend through RequestFriendInfo 
-        AgentFriendlist.Instance()->RequestFriendInfo(contentId);
+        if (contentId != 0)
+        {
+            Svc.Log.Debug($"4 - Fetching and Parsing Friend Packet: {contentId}");
+            // apparently you can request player's info without being a friend through RequestFriendInfo 
+            AgentFriendlist.Instance()->RequestFriendInfo(contentId);
+        }
 
         return true;
     }

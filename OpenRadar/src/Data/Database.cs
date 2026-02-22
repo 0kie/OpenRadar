@@ -1,5 +1,4 @@
 using System.IO;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Microsoft.Data.Sqlite;
 
 namespace OpenRadar;

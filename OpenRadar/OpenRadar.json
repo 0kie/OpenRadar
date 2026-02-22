@@ -1,13 +1,8 @@
 {
   "Author": "Treezy",
   "Name": "OpenRadar",
-  "Punchline": "A short one-liner that shows up in /xlplugins.",
-  "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
+  "Punchline": "Shows who is in the Party Finder party and their prog points before joining.",
+  "Description": "Enables automatically on installation, use /openradar for config",
   "ApplicableVersion": "any",
-  "Tags": [
-    "radar",
-    "libre",
-    "open",
-    "openradar"
-  ]
+  "AcceptFeedback": false
 }

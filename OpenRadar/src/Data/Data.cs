@@ -1,9 +1,6 @@
 using System.Collections.Generic;
-using System.Reflection.Metadata;
-using Dalamud.Game.Gui.PartyFinder.Types;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
-using Lumina.Excel.Sheets;
 using Openradar;
 
 namespace OpenRadar;
@@ -23,7 +20,10 @@ public static class Data
         if (index >= 0 && index < ExtractedPlayers.Count)
         {
             ExtractedPlayers[index] = playerInfo;
-            Tomestone.GetPlayerProg(playerInfo, index);
+            if (C.QueryTomestone)
+            {
+                Tomestone.GetPlayerProg(playerInfo, index);
+            }
         }
         else
         {

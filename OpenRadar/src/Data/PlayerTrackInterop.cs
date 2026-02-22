@@ -5,7 +5,7 @@ namespace OpenRadar;
 
 public static class PlayerTrackInterop
 {
-    private static bool Installed()
+    public static bool Installed()
     {
         return Svc.PluginInterface.InstalledPlugins.Any(
             x => x.InternalName == "PlayerTrack");
