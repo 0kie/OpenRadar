@@ -8,6 +8,7 @@ This plugin allows a user to see what players are already in the PF without join
 
 ```plaintext
 https://raw.githubusercontent.com/Ryan-RH/MyDalamudPlugins/main/pluginmaster.json
+```
 
 ## Motive
 PFRadar is a closed-source and heavily obfuscated Dalamud plugin that gets player information from a Chinese VPS to relate the retrieved content_ids from party finder packets to player names and worlds. Although the plugin states the data is anonymised and only data required is retrieved, it is a threat to the security and privacy of the user. Even with reverse engineering techniques, understanding the underlying mechanism of PFRadar is very difficult. 
