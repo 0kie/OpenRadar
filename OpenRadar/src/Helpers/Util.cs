@@ -130,21 +130,4 @@ public static class Util
             return "NA";
         }
     }
-
-    /// <summary>Opens a URL in the user's default browser.</summary>
-    public static void OpenUrl(string url)
-    {
-        try
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = url,
-                UseShellExecute = true
-            });
-        }
-        catch (Exception ex)
-        {
-            Svc.Log.Error($"Failed to open URL: {ex.Message}");
-        }
-    }
 }
