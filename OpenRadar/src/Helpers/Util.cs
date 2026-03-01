@@ -109,18 +109,18 @@ public static class Util
         try
         {
             var world = Svc.Data.GetExcelSheet<World>().First(w => w.RowId == worldId);
-            var dcName = world.DataCenter.Value.Name.ToString();
+            var dcRegion = world.DataCenter.Value.Region;
 
-            return dcName switch
+            return dcRegion switch
             {
                 // Japan
-                "Elemental" or "Gaia" or "Mana" or "Meteor" => "JP",
+                1 => "JP",
                 // North America
-                "Aether" or "Primal" or "Crystal" or "Dynamis" => "NA",
+                2 => "NA",
                 // Europe
-                "Chaos" or "Light" => "EU",
+                3 => "EU",
                 // Oceania
-                "Materia" => "OC",
+                4 => "OC",
                 // Fallback — NA is the safest guess for unknown DCs
                 _ => "NA"
             };
