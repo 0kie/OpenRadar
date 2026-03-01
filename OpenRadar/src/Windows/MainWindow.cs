@@ -109,7 +109,7 @@ public class MainWindow : Window
                                         if (Data.LodestoneIdCache.TryGetValue(player.content_id, out var lid))
                                         {
                                             var urlName = player.name!.ToLower().Replace(" ", "-");
-                                            Util.OpenUrl($"https://tomestone.gg/character/{lid}/{urlName}");
+                                            Dalamud.Utility.Util.OpenLink($"https://tomestone.gg/character/{lid}/{urlName}");
                                         }
                                     }
                                 }
