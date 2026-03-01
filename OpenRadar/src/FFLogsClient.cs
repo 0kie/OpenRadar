@@ -130,8 +130,8 @@ public class FFLogsClient : IDisposable
 
             return new Data.FFLogsData(
                 BestParse: rankings["ranks"] is JArray { Count: > 0 } ranksArr ? ranksArr[0]?["rankPercent"]?.ToObject<float>() : null,
-                MedianParse: rankings["medianPerformance"]?.ToObject<float>(),
-                Kills: rankings["totalKills"]?.ToObject<int>()
+                MedianParse: rankings["medianPerformance"]?.ToObject<float?>(),
+                Kills: rankings["totalKills"]?.ToObject<int?>()
             );
         }
         catch (Exception ex)
